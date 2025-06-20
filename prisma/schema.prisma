@@ -13,3 +13,35 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model AccessRequest {
+  id             String        @id @default(uuid())
+  requesterId    String // Slack user ID of the person requesting access
+  requesterEmail String // Optional: email for auditing
+  project        String // e.g. "analytics-prod"
+  status         RequestStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  approvedById String? // Slack ID of cloud engineer who approved (if any)
+  approvedBy   User?   @relation("Approver", fields: [approvedById], references: [id])
+
+  executedAt DateTime?
+  reason     String? // Optional reason for rejection
+}
+
+model User {
+  id           String  @id // Slack user ID
+  email        String
+  isCloudAdmin Boolean @default(false)
+
+  // Relation
+  approvedRequests AccessRequest[] @relation("Approver")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+}

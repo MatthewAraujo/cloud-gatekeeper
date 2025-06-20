@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3333
-
+@request_id=""
 ###
 
 # @name request_access
@@ -7,5 +7,35 @@ POST {{baseUrl}}/access-requests
 Content-Type: application/json
 
 {
+  "requesterId":"6140db45-6c1a-4e2b-a445-99b6e0963027",
   "message": "Me responde apenas com 'ok' nada mais do que isso, apenas uma resposta curta"
+}
+
+###
+
+# @name list_pending_requests
+GET {{baseUrl}}/access-requests/pending?viewerId=admin123
+Content-Type: application/json
+
+###
+
+# @name approve_access_request
+POST {{baseUrl}}/access-requests/{{request_access.response.body.id}}/approve
+Content-Type: application/json
+
+{
+  "approverId": "admin123",
+  "action": "APPROVE"
+}
+
+###
+
+# @name reject_access_request
+POST {{baseUrl}}/access-requests/{{request_access.response.body.id}}/approve
+Content-Type: application/json
+
+{
+  "approverId": "admin123",
+  "action": "REJECT",
+  "reason": "Access denied due to insufficient justification"
 }
