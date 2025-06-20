@@ -7,5 +7,5 @@ POST {{baseUrl}}/access-requests
 Content-Type: application/json
 
 {
-  "message": "Gostaria de adm para o kubernetes"
+  "message": "Me responde apenas com 'ok' nada mais do que isso, apenas uma resposta curta"
 }

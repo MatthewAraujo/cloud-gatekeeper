@@ -15,7 +15,7 @@ import { OpenaiModule } from './services/openai/openai.module'
 		AuthModule,
 		HttpModule,
 		EnvModule,
-		OpenaiModule
+
 	],
 })
 export class AppModule { }
