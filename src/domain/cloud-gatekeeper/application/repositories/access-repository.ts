@@ -1,8 +1,8 @@
-import { Prisma, AccessRequest } from "generated/prisma";
+import { AccessRequest } from '@/domain/cloud-gatekeeper/enterprise/entities/access-request';
 
 export abstract class AccessRequestRepository {
-	abstract create(accessRequest: Prisma.AccessRequestCreateInput): Promise<AccessRequest>;
+	abstract create(accessRequest: AccessRequest): Promise<void>;
 	abstract findById(id: string): Promise<AccessRequest | null>;
-	abstract save(id: string, data: Prisma.AccessRequestUpdateInput): Promise<AccessRequest>;
+	abstract save(accessRequest: AccessRequest): Promise<void>;
 	abstract findAll(): Promise<AccessRequest[]>;
 }

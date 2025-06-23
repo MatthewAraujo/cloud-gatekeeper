@@ -30,7 +30,7 @@ export class OnAccessRequestRejected implements EventHandler {
     const message = this.buildRejectionNotification(accessRequest, approverId, reason)
 
     // Send to the requester's Slack channel
-    await this.slackService.sendMessage(accessRequest.requesterId, message)
+    await this.slackService.sendMessage({ channel: accessRequest.requesterId, message })
 
     // You could also trigger other side effects here:
     // - Update audit logs
@@ -51,7 +51,9 @@ Your access request for project *${accessRequest.project}* has been rejected.
       message += `\n*Reason:* ${reason}`
     }
 
-    message += `\n\nIf you believe this was an error or need to provide additional information, please contact the cloud admin team.`
+    message += '\n\nIf you believe this was an error or need to provide additional information, please contact the cloud admin team.'
+
+
 
     return message
   }

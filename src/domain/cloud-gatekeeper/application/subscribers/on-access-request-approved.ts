@@ -29,7 +29,7 @@ export class OnAccessRequestApproved implements EventHandler {
     const message = this.buildApprovalNotification(accessRequest, approverId)
 
     // Send to the requester's Slack channel
-    await this.slackService.sendMessage(accessRequest.requesterId, message)
+    await this.slackService.sendMessage({ channel: accessRequest.requesterId, message })
 
     // You could also trigger other side effects here:
     // - Grant actual cloud access

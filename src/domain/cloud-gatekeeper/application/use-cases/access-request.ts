@@ -3,6 +3,7 @@ import { OpenAiService } from '@/infra/services/openai/openai.service'
 import { SlackService } from '@/infra/services/slack/slack.service'
 import { AccessRequestRepository } from '../repositories/access-repository'
 import { UserRepository } from '../repositories/user-repository'
+import { AccessRequest } from '@/domain/cloud-gatekeeper/enterprise/entities/access-request'
 
 interface AccessRequestUseCaseRequest {
 	message: string
@@ -34,16 +35,18 @@ export class AccessRequestUseCase {
 			throw new Error('No response from openai')
 		}
 
-		await this.slackService.sendMessage(slackChannel, response)
+		await this.slackService.sendMessage({ channel: slackChannel, message: response })
 
 		// A simple way to get the project from the message for now
 		const projectMatch = message.match(/project\s+([\w-]+)/)
 		const project = projectMatch ? projectMatch[1] : 'unknown-project'
 
-		await this.accessRequestRepository.create({
+		const accessRequest = AccessRequest.create({
 			requesterId: user.id,
 			requesterEmail: user.email,
 			project,
 		})
+
+		await this.accessRequestRepository.create(accessRequest)
 	}
 }

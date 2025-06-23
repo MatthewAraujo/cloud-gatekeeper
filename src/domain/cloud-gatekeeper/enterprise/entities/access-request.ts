@@ -67,6 +67,10 @@ export class AccessRequest extends AggregateRoot<AccessRequestProps> {
     return accessRequest
   }
 
+  static reconstruct(props: AccessRequestProps, id: UniqueEntityID): AccessRequest {
+    return new AccessRequest(props, id)
+  }
+
   approve(approverId: string): void {
     if (this.props.status !== 'PENDING') {
       throw new Error('Cannot approve a request that is not pending')

@@ -1,7 +1,36 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
-import { Prisma, AccessRequest } from 'generated/prisma'
 import { AccessRequestRepository } from '@/domain/cloud-gatekeeper/application/repositories/access-repository'
+import { AccessRequest as DomainAccessRequest } from '@/domain/cloud-gatekeeper/enterprise/entities/access-request'
+import { DomainEvents } from '@/core/events/domain-events'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+
+function toPersistence(accessRequest: DomainAccessRequest) {
+  return {
+    id: accessRequest.id.toString(),
+    requesterId: accessRequest.requesterId,
+    requesterEmail: accessRequest.requesterEmail,
+    project: accessRequest.project,
+    status: accessRequest.status,
+    approvedById: accessRequest.approvedById ?? null,
+    reason: accessRequest.reason ?? null,
+    createdAt: accessRequest.createdAt,
+    updatedAt: accessRequest.updatedAt,
+  }
+}
+
+function toDomain(raw: any): DomainAccessRequest {
+  return DomainAccessRequest.reconstruct({
+    requesterId: raw.requesterId,
+    requesterEmail: raw.requesterEmail,
+    project: raw.project,
+    status: raw.status,
+    approvedById: raw.approvedById ?? undefined,
+    reason: raw.reason ?? undefined,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  }, new UniqueEntityID(raw.id))
+}
 
 @Injectable()
 export class PrismaAccessRequestRepository extends AccessRequestRepository {
@@ -9,62 +38,32 @@ export class PrismaAccessRequestRepository extends AccessRequestRepository {
     super();
   }
 
-  async create(data: Prisma.AccessRequestCreateInput): Promise<AccessRequest> {
-
-    try {
-      const result = await this.prisma.accessRequest.create({ data })
-      return result
-    } catch (error) {
-      console.error('❌ Error creating access request:', error)
-      throw error
-    }
+  async create(accessRequest: DomainAccessRequest): Promise<void> {
+    const data = toPersistence(accessRequest)
+    await this.prisma.accessRequest.create({ data })
+    DomainEvents.dispatchEventsForAggregate(accessRequest.id)
   }
 
-  async save(id: string, data: Prisma.AccessRequestUpdateInput): Promise<AccessRequest> {
-
-    try {
-      const result = await this.prisma.accessRequest.update({
-        where: { id },
-        data,
-      })
-      return result
-    } catch (error) {
-      console.error('❌ Error updating access request:', error)
-      throw error
-    }
+  async save(accessRequest: DomainAccessRequest): Promise<void> {
+    const data = toPersistence(accessRequest)
+    await this.prisma.accessRequest.update({
+      where: { id: data.id },
+      data,
+    })
+    DomainEvents.dispatchEventsForAggregate(accessRequest.id)
   }
 
-  async delete(id: string): Promise<AccessRequest> {
-    try {
-      const result = await this.prisma.accessRequest.delete({
-        where: { id },
-      })
-      return result
-    } catch (error) {
-      console.error('❌ Error deleting access request:', error)
-      throw error
-    }
+  async delete(id: string): Promise<void> {
+    await this.prisma.accessRequest.delete({ where: { id } })
   }
 
-  async findById(id: string): Promise<AccessRequest | null> {
-    try {
-      const result = await this.prisma.accessRequest.findUnique({
-        where: { id },
-      })
-      return result
-    } catch (error) {
-      console.error('❌ Error finding access request:', error)
-      throw error
-    }
+  async findById(id: string): Promise<DomainAccessRequest | null> {
+    const result = await this.prisma.accessRequest.findUnique({ where: { id } })
+    return result ? toDomain(result) : null
   }
 
-  async findAll(): Promise<AccessRequest[]> {
-    try {
-      const result = await this.prisma.accessRequest.findMany()
-      return result
-    } catch (error) {
-      console.error('❌ Error finding all access requests:', error)
-      throw error
-    }
+  async findAll(): Promise<DomainAccessRequest[]> {
+    const result = await this.prisma.accessRequest.findMany()
+    return result.map(toDomain)
   }
 }

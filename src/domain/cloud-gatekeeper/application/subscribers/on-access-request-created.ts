@@ -30,7 +30,7 @@ export class OnAccessRequestCreated implements EventHandler {
     // You can customize the channel or get it from configuration
     const adminChannel = 'C0700000000' // Cloud admins channel
 
-    await this.slackService.sendMessage(adminChannel, message)
+    await this.slackService.sendMessage({ channel: adminChannel, message })
   }
 
   private buildAccessRequestNotification(accessRequest: any): string {

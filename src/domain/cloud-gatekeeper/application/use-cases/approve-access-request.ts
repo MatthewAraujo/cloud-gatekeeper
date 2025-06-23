@@ -1,7 +1,7 @@
 import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common'
 import { AccessRequestRepository } from '../repositories/access-repository'
 import { UserRepository } from '../repositories/user-repository'
-import { SlackService } from '@/infra/services/slack/slack.service'
+
 interface ApproveAccessRequestUseCaseRequest {
   accessRequestId: string
   approverId: string
@@ -14,7 +14,6 @@ export class ApproveAccessRequestUseCase {
   constructor(
     private readonly accessRequestRepository: AccessRequestRepository,
     private readonly userRepository: UserRepository,
-    private readonly slackService: SlackService,
   ) { }
 
   async execute(request: ApproveAccessRequestUseCaseRequest): Promise<void> {
@@ -49,26 +48,20 @@ export class ApproveAccessRequestUseCase {
       throw new ForbiddenException('Users cannot approve their own access requests')
     }
 
-    const newStatus = action === 'APPROVE' ? 'APPROVED' : 'REJECTED'
-    const updateData: any = {
-      status: newStatus,
-      approvedById: approverId,
+    // Use domain entity methods to trigger events
+    if (action === 'APPROVE') {
+      accessRequest.approve(approverId)
+    } else {
+      accessRequest.reject(approverId, reason)
     }
 
-    if (action === 'REJECT' && reason) {
-      updateData.reason = reason
-    }
-
-    await this.accessRequestRepository.save(accessRequestId, updateData)
-
-    const message = this.slackService.buildAccessRequestMessage(accessRequest, approver, action, reason)
-    await this.slackService.sendMessage(accessRequest.requesterId, message)
+    await this.accessRequestRepository.save(accessRequest)
 
     console.log('✅ Access request processed successfully', {
       accessRequestId,
       action,
       approverId,
-      newStatus
+      newStatus: accessRequest.status
     })
   }
 } 
