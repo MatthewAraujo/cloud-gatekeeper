@@ -14,28 +14,28 @@ Content-Type: application/json
 ###
 
 # @name list_pending_requests
-GET {{baseUrl}}/access-requests/pending?viewerId=admin123
+GET {{baseUrl}}/access-requests/pending?viewerId=1323ce6a-44a0-422a-a4ee-ecb331c36eaf
 Content-Type: application/json
 
 ###
 
 # @name approve_access_request
-POST {{baseUrl}}/access-requests/{{request_access.response.body.id}}/approve
+POST {{baseUrl}}/access-requests/a1b56177-97dc-40fa-817b-9b0412adfb69/approve
 Content-Type: application/json
 
 {
-  "approverId": "admin123",
+  "approverId": "1323ce6a-44a0-422a-a4ee-ecb331c36eaf",
   "action": "APPROVE"
 }
 
 ###
 
 # @name reject_access_request
-POST {{baseUrl}}/access-requests/{{request_access.response.body.id}}/approve
+POST {{baseUrl}}/access-requests/0deaf4aa-ef88-472d-ae5c-7d51d953c687/approve
 Content-Type: application/json
 
 {
-  "approverId": "admin123",
+  "approverId": "1323ce6a-44a0-422a-a4ee-ecb331c36eaf",
   "action": "REJECT",
   "reason": "Access denied due to insufficient justification"
 }

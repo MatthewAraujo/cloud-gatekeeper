@@ -14,7 +14,6 @@ export class ListPendingAccessRequestsUseCase {
   ) { }
 
   async execute(request: ListPendingAccessRequestsUseCaseRequest) {
-    console.log('📋 ListPendingAccessRequestsUseCase.execute() started', { request })
 
     const { viewerId } = request
 
@@ -34,7 +33,6 @@ export class ListPendingAccessRequestsUseCase {
     const allRequests = await this.accessRequestRepository.findAll()
     const pendingRequests = allRequests.filter(request => request.status === 'PENDING')
 
-    console.log('✅ Found pending access requests:', pendingRequests.length)
 
     return {
       pendingRequests: pendingRequests.map(request => ({

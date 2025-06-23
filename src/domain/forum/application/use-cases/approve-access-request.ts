@@ -19,7 +19,6 @@ export class ApproveAccessRequestUseCase {
   ) { }
 
   async execute(request: ApproveAccessRequestUseCaseRequest): Promise<void> {
-    console.log('🔐 ApproveAccessRequestUseCase.execute() started', { request })
 
     const { accessRequestId, approverId, action, reason } = request
 
@@ -68,30 +67,8 @@ export class ApproveAccessRequestUseCase {
     await this.accessRequestRepository.save(accessRequestId, updateData)
 
     // 6. Send notification to Slack
-    const message = this.buildSlackMessage(accessRequest, approver, action, reason)
+    const message = this.slackService.buildAccessRequestMessage(accessRequest, approver, action, reason)
     await this.slackService.sendMessage(accessRequest.requesterId, message)
 
-    console.log('✅ Access request processed successfully', {
-      accessRequestId,
-      action,
-      approverId,
-      newStatus
-    })
-  }
-
-  private buildSlackMessage(
-    accessRequest: any,
-    approver: any,
-    action: 'APPROVE' | 'REJECT',
-    reason?: string
-  ): string {
-    const status = action === 'APPROVE' ? '✅ APPROVED' : '❌ REJECTED'
-    const baseMessage = `Your access request for project "${accessRequest.project}" has been ${status} by ${approver.email}`
-
-    if (action === 'REJECT' && reason) {
-      return `${baseMessage}\nReason: ${reason}`
-    }
-
-    return baseMessage
   }
 } 

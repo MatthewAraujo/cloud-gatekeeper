@@ -25,13 +25,11 @@ export class AccessRequestController {
 	async handle(
 		@Body(bodyValidationPipe) body: AccessRequestBodySchema,
 	) {
-		console.log('📨 POST /access-requests received', { body })
 		const { message, requesterId } = body
 
 		await this.accessRequest.execute({
 			message,
 			requesterId,
 		})
-		console.log('✅ POST /access-requests completed successfully')
 	}
 }

@@ -21,7 +21,6 @@ export class PrismaAccessRequestRepository extends AccessRequestRepository {
   }
 
   async save(id: string, data: Prisma.AccessRequestUpdateInput): Promise<AccessRequest> {
-    console.log('💾 PrismaAccessRequestRepository.save() called', { id, data })
 
     try {
       const result = await this.prisma.accessRequest.update({

@@ -19,15 +19,12 @@ export class ListPendingAccessRequestsController {
 
   @Get('/pending')
   async handle(@Query(queryValidationPipe) query: ListPendingAccessRequestsQuerySchema) {
-    console.log('📋 GET /access-requests/pending received', { query })
-
     const { viewerId } = query
 
     const result = await this.listPendingAccessRequests.execute({
       viewerId,
     })
 
-    console.log('✅ GET /access-requests/pending completed successfully')
 
     return result
   }

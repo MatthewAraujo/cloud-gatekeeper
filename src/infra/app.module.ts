@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common'
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { AuthModule } from './auth/auth.module'
 import { envSchema } from './env/env'
 import { EnvModule } from './env/env.module'
 import { HttpModule } from './http/http.module'
-import { OpenaiModule } from './services/openai/openai.module'
+import { LoggerMiddleware } from './middleware/logger.middleware'
 
 @Module({
 	imports: [
@@ -18,4 +18,8 @@ import { OpenaiModule } from './services/openai/openai.module'
 
 	],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+	configure(consumer: MiddlewareConsumer) {
+		consumer.apply(LoggerMiddleware).forRoutes('*')
+	}
+}

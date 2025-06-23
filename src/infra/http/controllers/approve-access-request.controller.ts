@@ -24,8 +24,6 @@ export class ApproveAccessRequestController {
     @Param('id') accessRequestId: string,
     @Body(bodyValidationPipe) body: ApproveAccessRequestBodySchema,
   ) {
-    console.log('🔐 POST /access-requests/:id/approve received', { accessRequestId, body })
-
     const { approverId, action, reason } = body
 
     await this.approveAccessRequest.execute({
@@ -35,6 +33,5 @@ export class ApproveAccessRequestController {
       reason,
     })
 
-    console.log('✅ POST /access-requests/:id/approve completed successfully')
   }
 } 
