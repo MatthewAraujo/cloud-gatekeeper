@@ -45,3 +45,11 @@ enum RequestStatus {
   REJECTED
   EXECUTED
 }
+
+model Log {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  level     String
+  message   String
+  meta      Json?
+}

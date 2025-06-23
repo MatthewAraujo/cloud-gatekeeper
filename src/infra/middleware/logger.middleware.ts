@@ -1,9 +1,12 @@
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common'
+import { Injectable, NestMiddleware, Logger, Inject } from '@nestjs/common'
 import { Request, Response, NextFunction } from 'express'
+import { LogService } from '@/infra/services/log/log.service'
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   private readonly logger = new Logger(LoggerMiddleware.name)
+
+  constructor(private readonly logService: LogService) { }
 
   use(req: Request, res: Response, next: NextFunction): void {
     const startTime = Date.now()
@@ -37,6 +40,24 @@ export class LoggerMiddleware implements NestMiddleware {
       middleware.logger[logLevel](
         `${emoji} ${method} ${originalUrl} - Status: ${statusCode} - Duration: ${duration}ms - RequestID: ${requestId}`
       )
+
+      // Save log to database
+      middleware.logService.log(
+        logLevel === 'error' ? 'ERROR' : logLevel === 'warn' ? 'WARN' : 'INFO',
+        `${method} ${originalUrl} - Status: ${statusCode}`,
+        {
+          ip,
+          userAgent,
+          requestId,
+          duration,
+          statusCode,
+          method,
+          url: originalUrl,
+          requestBody: method !== 'GET' ? middleware.sanitizeRequestBody(req.body) : undefined,
+        }
+      ).catch((err) => {
+        middleware.logger.error('Failed to save log to database', err)
+      })
 
       // Log response body for errors (excluding sensitive data)
       if (statusCode >= 400 && chunk) {

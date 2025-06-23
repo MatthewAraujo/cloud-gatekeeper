@@ -6,6 +6,7 @@ import { EnvModule } from './env/env.module'
 import { EventsModule } from './events/events.module'
 import { HttpModule } from './http/http.module'
 import { LoggerMiddleware } from './middleware/logger.middleware'
+import { ServicesModule } from './services/services.module'
 
 @Module({
 	imports: [
@@ -17,6 +18,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware'
 		EventsModule,
 		HttpModule,
 		EnvModule,
+		ServicesModule,
 	],
 })
 export class AppModule implements NestModule {
