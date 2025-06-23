@@ -3,34 +3,8 @@ import { PrismaService } from '../prisma.service'
 import { AccessRequestRepository } from '@/domain/cloud-gatekeeper/application/repositories/access-repository'
 import { AccessRequest as DomainAccessRequest } from '@/domain/cloud-gatekeeper/enterprise/entities/access-request'
 import { DomainEvents } from '@/core/events/domain-events'
-import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { PrismaAccessRequestMappers } from './mappers/access-request-mapper'
 
-function toPersistence(accessRequest: DomainAccessRequest) {
-  return {
-    id: accessRequest.id.toString(),
-    requesterId: accessRequest.requesterId,
-    requesterEmail: accessRequest.requesterEmail,
-    project: accessRequest.project,
-    status: accessRequest.status,
-    approvedById: accessRequest.approvedById ?? null,
-    reason: accessRequest.reason ?? null,
-    createdAt: accessRequest.createdAt,
-    updatedAt: accessRequest.updatedAt,
-  }
-}
-
-function toDomain(raw: any): DomainAccessRequest {
-  return DomainAccessRequest.reconstruct({
-    requesterId: raw.requesterId,
-    requesterEmail: raw.requesterEmail,
-    project: raw.project,
-    status: raw.status,
-    approvedById: raw.approvedById ?? undefined,
-    reason: raw.reason ?? undefined,
-    createdAt: raw.createdAt,
-    updatedAt: raw.updatedAt,
-  }, new UniqueEntityID(raw.id))
-}
 
 @Injectable()
 export class PrismaAccessRequestRepository extends AccessRequestRepository {
@@ -39,13 +13,13 @@ export class PrismaAccessRequestRepository extends AccessRequestRepository {
   }
 
   async create(accessRequest: DomainAccessRequest): Promise<void> {
-    const data = toPersistence(accessRequest)
+    const data = PrismaAccessRequestMappers.toPersistence(accessRequest)
     await this.prisma.accessRequest.create({ data })
     DomainEvents.dispatchEventsForAggregate(accessRequest.id)
   }
 
   async save(accessRequest: DomainAccessRequest): Promise<void> {
-    const data = toPersistence(accessRequest)
+    const data = PrismaAccessRequestMappers.toPersistence(accessRequest)
     await this.prisma.accessRequest.update({
       where: { id: data.id },
       data,
@@ -59,11 +33,11 @@ export class PrismaAccessRequestRepository extends AccessRequestRepository {
 
   async findById(id: string): Promise<DomainAccessRequest | null> {
     const result = await this.prisma.accessRequest.findUnique({ where: { id } })
-    return result ? toDomain(result) : null
+    return result ? PrismaAccessRequestMappers.toDomain(result) : null
   }
 
   async findAll(): Promise<DomainAccessRequest[]> {
     const result = await this.prisma.accessRequest.findMany()
-    return result.map(toDomain)
+    return result.map(PrismaAccessRequestMappers.toDomain)
   }
 }

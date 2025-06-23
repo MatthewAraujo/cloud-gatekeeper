@@ -33,14 +33,7 @@ export class ListPendingAccessRequestsUseCase {
     const pendingRequests = allRequests.filter(request => request.status === 'PENDING')
 
     return {
-      pendingRequests: pendingRequests.map(request => ({
-        id: request.id,
-        requesterId: request.requesterId,
-        requesterEmail: request.requesterEmail,
-        project: request.project,
-        status: request.status,
-        createdAt: request.createdAt,
-      }))
+      pendingRequests
     }
   }
 } 

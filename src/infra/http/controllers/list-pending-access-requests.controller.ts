@@ -3,6 +3,7 @@ import { Public } from '@/infra/auth/public'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { Query, Controller, Get } from '@nestjs/common'
 import { z } from 'zod'
+import { AccessRequestPresenter } from '../presenters/access-request-presenter'
 
 const listPendingAccessRequestsQuerySchema = z.object({
   viewerId: z.string(),
@@ -25,7 +26,6 @@ export class ListPendingAccessRequestsController {
       viewerId,
     })
 
-
-    return result
+    return result.pendingRequests.map(AccessRequestPresenter.toHTTP)
   }
 } 
