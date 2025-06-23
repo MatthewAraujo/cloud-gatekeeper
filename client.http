@@ -20,7 +20,7 @@ Content-Type: application/json
 ###
 
 # @name approve_access_request
-POST {{baseUrl}}/access-requests/a1b56177-97dc-40fa-817b-9b0412adfb69/approve
+POST {{baseUrl}}/access-requests/28d38bf1-d8aa-430f-885f-862cb702273d/approve
 Content-Type: application/json
 
 {

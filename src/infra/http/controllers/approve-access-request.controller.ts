@@ -1,4 +1,4 @@
-import { ApproveAccessRequestUseCase } from '@/domain/forum/application/use-cases/approve-access-request'
+import { ApproveAccessRequestUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/approve-access-request'
 import { Public } from '@/infra/auth/public'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { Body, Controller, Post, Param } from '@nestjs/common'

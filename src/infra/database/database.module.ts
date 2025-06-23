@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
 import { PrismaService } from './prisma/prisma.service'
-import { AccessRequestRepository, } from '@/domain/forum/application/repositories/access-repository'
+import { AccessRequestRepository, } from '@/domain/cloud-gatekeeper/application/repositories/access-repository'
 import { PrismaAccessRequestRepository } from './prisma/repository/prisma-access-request.repository'
-import { UserRepository } from '@/domain/forum/application/repositories/user-repository'
+import { UserRepository } from '@/domain/cloud-gatekeeper/application/repositories/user-repository'
 import { PrismaUserRepository } from './prisma/repository/prisma-user.repository'
 @Module({
 	imports: [],

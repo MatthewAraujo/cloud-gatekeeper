@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { Prisma, AccessRequest } from 'generated/prisma'
-import { AccessRequestRepository } from '@/domain/forum/application/repositories/access-repository'
+import { AccessRequestRepository } from '@/domain/cloud-gatekeeper/application/repositories/access-repository'
 
 @Injectable()
 export class PrismaAccessRequestRepository extends AccessRequestRepository {

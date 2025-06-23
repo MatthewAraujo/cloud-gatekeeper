@@ -1,4 +1,4 @@
-import { ListPendingAccessRequestsUseCase } from '@/domain/forum/application/use-cases/list-pending-access-requests'
+import { ListPendingAccessRequestsUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/list-pending-access-requests'
 import { Public } from '@/infra/auth/public'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { Query, Controller, Get } from '@nestjs/common'

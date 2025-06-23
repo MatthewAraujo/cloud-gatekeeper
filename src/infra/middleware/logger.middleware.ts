@@ -10,7 +10,7 @@ export class LoggerMiddleware implements NestMiddleware {
     const { method, originalUrl, ip, headers } = req
     const userAgent = headers['user-agent'] || 'Unknown'
     const requestId = this.generateRequestId()
-    // Store reference to 'this' for use in arrow function below
+    // biome-ignore lint/complexity/noUselessThisAlias: <explanation>
     const middleware = this
 
     // Log incoming request
@@ -31,7 +31,6 @@ export class LoggerMiddleware implements NestMiddleware {
       const duration = endTime - startTime
       const { statusCode } = res
 
-      // Determine log level based on status code
       const logLevel = middleware.getLogLevel(statusCode)
       const emoji = middleware.getStatusEmoji(statusCode)
 
@@ -50,7 +49,6 @@ export class LoggerMiddleware implements NestMiddleware {
         }
       }
 
-      // Call original end method
       return originalEnd.call(res, chunk, encoding)
     }
 
