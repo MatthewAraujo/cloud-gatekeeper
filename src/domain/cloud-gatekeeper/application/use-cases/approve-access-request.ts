@@ -1,6 +1,7 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common'
+import { Injectable, ForbiddenException, BadRequestException, Logger } from '@nestjs/common'
 import { AccessRequestRepository } from '../repositories/access-repository'
 import { UserRepository } from '../repositories/user-repository'
+import { AccessRequest } from '@/domain/cloud-gatekeeper/enterprise/entities/access-request'
 
 interface ApproveAccessRequestUseCaseRequest {
   accessRequestId: string
@@ -11,44 +12,43 @@ interface ApproveAccessRequestUseCaseRequest {
 
 @Injectable()
 export class ApproveAccessRequestUseCase {
+  private readonly logger = new Logger(ApproveAccessRequestUseCase.name)
+
   constructor(
     private readonly accessRequestRepository: AccessRequestRepository,
     private readonly userRepository: UserRepository,
   ) { }
 
   async execute(request: ApproveAccessRequestUseCaseRequest): Promise<void> {
-    console.log('🔐 ApproveAccessRequestUseCase.execute() started', { request })
-
     const { accessRequestId, approverId, action, reason } = request
 
     const approver = await this.userRepository.findById(approverId)
     if (!approver) {
-      console.error('❌ Approver not found:', approverId)
+      this.logger.warn(`Approver not found: ${approverId}`)
       throw new BadRequestException('Approver not found')
     }
 
     if (!approver.isCloudAdmin) {
-      console.error('❌ Approver is not a cloud admin:', approverId)
+      this.logger.warn(`Approver is not a cloud admin: ${approverId}`)
       throw new ForbiddenException('Only cloud admins can approve access requests')
     }
 
     const accessRequest = await this.accessRequestRepository.findById(accessRequestId)
     if (!accessRequest) {
-      console.error('❌ Access request not found:', accessRequestId)
+      this.logger.warn(`Access request not found: ${accessRequestId}`)
       throw new BadRequestException('Access request not found')
     }
 
     if (accessRequest.status !== 'PENDING') {
-      console.error('❌ Access request is not pending:', accessRequestId, accessRequest.status)
+      this.logger.warn(`Access request is not pending: ${accessRequestId}, status: ${accessRequest.status}`)
       throw new BadRequestException('Access request is not in pending status')
     }
 
     if (accessRequest.requesterId === approverId) {
-      console.error('❌ User cannot approve their own request:', approverId)
+      this.logger.warn(`User cannot approve their own request: ${approverId}`)
       throw new ForbiddenException('Users cannot approve their own access requests')
     }
 
-    // Use domain entity methods to trigger events
     if (action === 'APPROVE') {
       accessRequest.approve(approverId)
     } else {
@@ -57,11 +57,6 @@ export class ApproveAccessRequestUseCase {
 
     await this.accessRequestRepository.save(accessRequest)
 
-    console.log('✅ Access request processed successfully', {
-      accessRequestId,
-      action,
-      approverId,
-      newStatus: accessRequest.status
-    })
+    this.logger.log(`Access request processed successfully: { accessRequestId: ${accessRequestId}, action: ${action}, approverId: ${approverId}, newStatus: ${accessRequest.status} }`)
   }
 } 
