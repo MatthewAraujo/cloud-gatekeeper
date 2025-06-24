@@ -1,98 +1,299 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Cloud Gatekeeper
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A modern, event-driven access management system for cloud resources built with Domain-Driven Design principles and Clean Architecture.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🎯 What is Cloud Gatekeeper?
 
-## Description
+Cloud Gatekeeper is a sophisticated access control system that manages AWS resource permissions through an intelligent approval workflow. It provides a secure, auditable, and automated way to grant temporary access to cloud resources while maintaining compliance and security standards.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Key Features
 
-## Project setup
+- **🔐 Intelligent Access Requests**: AI-powered analysis of access requests using OpenAI to extract project names and required permissions
+- **📋 Approval Workflow**: Streamlined approval process with role-based access control
+- **🤖 Automated AWS Integration**: Automatic IAM policy creation and resource discovery
+- **📱 Slack Integration**: Real-time notifications and approval workflows via Slack
+- **📊 Audit Trail**: Complete audit logging of all access requests and approvals
+- **🛡️ Security First**: Built with security best practices and input validation
 
-```bash
-$ pnpm install
+## 🏗️ Architecture Overview
+
+Cloud Gatekeeper follows **Clean Architecture** and **Domain-Driven Design (DDD)** principles, ensuring maintainability, testability, and scalability.
+
+### Architecture Layers
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                       │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │   HTTP Controllers │  │   Middleware    │  │   Validation │ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Application Layer                        │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │   Use Cases     │  │   Event Handlers│  │   Subscribers │ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                     Domain Layer                            │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │   Entities      │  │   Domain Events │  │   Value Objects│ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                  Infrastructure Layer                       │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
+│  │   Database      │  │   External APIs │  │   Services   │ │
+│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Compile and run the project
+### Core Design Patterns
 
-```bash
-# development
-$ pnpm run start
+#### 1. **Domain Events Pattern**
+The system uses a sophisticated event-driven architecture where domain events trigger side effects:
 
-# watch mode
-$ pnpm run start:dev
+```typescript
+// Domain events are emitted when business logic occurs
+accessRequest.addDomainEvent(new AccessRequestApprovedEvent(accessRequest, approverId))
 
-# production mode
-$ pnpm run start:prod
+// Event handlers process these events asynchronously
+@EventHandler
+class OnAccessRequestApproved {
+  async handle(event: AccessRequestApprovedEvent) {
+    // Send Slack notification
+    // Grant AWS permissions
+    // Update audit logs
+  }
+}
 ```
 
-## Run tests
+#### 2. **Repository Pattern**
+Data access is abstracted through repository interfaces:
 
-```bash
-# unit tests
-$ pnpm run test
+```typescript
+// Domain layer defines the contract
+abstract class AccessRequestRepository {
+  abstract create(accessRequest: AccessRequest): Promise<void>
+  abstract findById(id: string): Promise<AccessRequest | null>
+}
 
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+// Infrastructure layer implements the contract
+class PrismaAccessRequestRepository extends AccessRequestRepository {
+  async create(accessRequest: AccessRequest): Promise<void> {
+    // Prisma implementation
+  }
+}
 ```
 
-## Deployment
+#### 3. **Use Case Pattern**
+Business logic is encapsulated in use cases:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g mau
-$ mau deploy
+```typescript
+@Injectable()
+export class AccessRequestUseCase {
+  async execute(request: AccessRequestUseCaseRequest): Promise<void> {
+    // 1. Validate user exists
+    // 2. Analyze request with AI
+    // 3. Create access request
+    // 4. Send notifications
+  }
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 🛠️ Technology Stack
 
-## Resources
+### Backend Framework
+- **NestJS** - Progressive Node.js framework with TypeScript support
+- **TypeScript** - Type-safe JavaScript for better developer experience
 
-Check out a few resources that may come in handy when working with NestJS:
+### Database & ORM
+- **PostgreSQL** - Robust relational database
+- **Prisma** - Type-safe database client and migrations
+- **Redis** - Caching and session management
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Cloud Services
+- **AWS SDK v3** - Modern AWS SDK for IAM and resource management
+- **AWS IAM** - Identity and Access Management
+- **AWS Resource Groups Tagging API** - Resource discovery and tagging
 
-## Support
+### AI & External Services
+- **OpenAI API** - Natural language processing for request analysis
+- **Slack API** - Real-time notifications and workflow integration
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Development Tools
+- **Biome** - Fast formatter and linter
+- **Vitest** - Fast unit testing framework
+- **Docker** - Containerization for development and deployment
 
-## Stay in touch
+## 🏛️ Domain Model
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Core Entities
 
-## License
+#### AccessRequest
+The central entity representing a request for cloud resource access:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```typescript
+class AccessRequest extends AggregateRoot<AccessRequestProps> {
+  // Properties
+  requesterId: string
+  requesterEmail: string
+  username: string
+  project: string
+  permissions: string[]
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  
+  // Business methods
+  approve(approverId: string): void
+  reject(approverId: string, reason?: string): void
+}
+```
+
+#### User
+Represents system users with their roles and permissions:
+
+```typescript
+interface User {
+  id: string           // Slack user ID
+  email: string        // User email
+  username: string     // AWS username
+  isCloudAdmin: boolean // Admin privileges
+}
+```
+
+### Domain Events
+
+The system emits domain events for important business operations:
+
+- **AccessRequestCreatedEvent** - When a new access request is submitted
+- **AccessRequestApprovedEvent** - When an access request is approved
+- **AccessRequestRejectedEvent** - When an access request is rejected
+
+## 🔄 Workflow Architecture
+
+### Access Request Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant API as API Gateway
+    participant UC as Use Case
+    participant AI as OpenAI
+    participant DB as Database
+    participant S as Slack
+    participant AWS as AWS IAM
+
+    U->>API: Submit access request
+    API->>UC: Process request
+    UC->>AI: Analyze request text
+    AI->>UC: Extract project & permissions
+    UC->>DB: Create access request
+    UC->>S: Notify admins
+    DB-->>UC: Request saved
+    UC-->>API: Request created
+    API-->>U: Confirmation
+```
+
+### Approval Flow
+
+```mermaid
+sequenceDiagram
+    participant A as Admin
+    participant API as API Gateway
+    participant UC as Use Case
+    participant DB as Database
+    participant EH as Event Handler
+    participant S as Slack
+    participant AWS as AWS IAM
+
+    A->>API: Approve request
+    API->>UC: Process approval
+    UC->>DB: Update status
+    DB-->>UC: Updated
+    UC->>EH: Trigger events
+    EH->>S: Notify user
+    EH->>AWS: Grant permissions
+    EH-->>UC: Events processed
+    UC-->>API: Approval complete
+    API-->>A: Confirmation
+```
+
+## 🔧 Key Components
+
+### 1. **AI-Powered Request Analysis**
+The system uses OpenAI to intelligently parse access requests:
+
+```typescript
+const openAiResponse = await this.openaiService.createCompletion(`
+  Analyze this access request message and extract the project name and required AWS permissions.
+  Return a JSON object with "project" and "permissions" fields.
+  Message: "${message}"
+`)
+```
+
+### 2. **AWS Resource Discovery**
+Automatically discovers AWS resources based on project names:
+
+```typescript
+async discoverResourceByProject(projectName: string): Promise<string> {
+  // Search by tags
+  const taggedResources = await this.searchByTags(projectName)
+  
+  // Search by name
+  const namedResources = await this.searchByName(projectName)
+  
+  // Use fallback pattern
+  return `arn:aws:s3:::${projectName}/*`
+}
+```
+
+### 3. **Event-Driven Notifications**
+Slack notifications are triggered by domain events:
+
+```typescript
+@EventHandler
+class OnAccessRequestApproved {
+  async handle(event: AccessRequestApprovedEvent) {
+    const message = this.buildApprovalNotification(event.accessRequest)
+    await this.slackService.sendMessage({
+      channel: event.accessRequest.requesterId,
+      message
+    })
+  }
+}
+```
+
+## 🧪 Testing Strategy
+
+The project follows a comprehensive testing approach:
+
+- **Unit Tests** - Test individual components and business logic
+- **Integration Tests** - Test component interactions
+- **E2E Tests** - Test complete workflows
+- **Domain Event Tests** - Test event-driven behavior
+
+## 🔒 Security Features
+
+- **Input Validation** - Zod schema validation for all inputs
+- **Role-Based Access Control** - Cloud admin role enforcement
+- **Audit Logging** - Complete audit trail of all operations
+- **Error Handling** - Graceful error handling without exposing sensitive data
+- **Environment Configuration** - Secure configuration management
+
+## 📈 Scalability Considerations
+
+- **Event-Driven Architecture** - Loose coupling for horizontal scaling
+- **Repository Pattern** - Easy database switching and optimization
+- **Modular Design** - Independent service modules
+- **Async Processing** - Non-blocking event handling
+- **Caching Strategy** - Redis for performance optimization
+
+## 🎨 Code Quality
+
+- **Clean Architecture** - Separation of concerns
+- **Domain-Driven Design** - Business-focused modeling
+- **Type Safety** - Full TypeScript coverage
+- **Code Formatting** - Biome for consistent code style
+- **Linting** - Strict linting rules for code quality
+
+This architecture ensures the system is maintainable, testable, and scalable while providing a robust foundation for cloud access management.
