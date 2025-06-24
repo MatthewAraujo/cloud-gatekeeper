@@ -12,6 +12,7 @@ export class InMemoryUserRepository extends UserRepository {
     const user: User = {
       id: data.id as string,
       email: data.email as string,
+      username: data.username as string,
       isCloudAdmin: data.isCloudAdmin as boolean,
     }
     this.items.push(user)

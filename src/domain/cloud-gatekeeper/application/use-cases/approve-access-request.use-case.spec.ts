@@ -15,11 +15,13 @@ describe('ApproveAccessRequestUseCase', () => {
   })
 
   it('should approve a pending access request by a cloud admin', async () => {
-    await userRepository.create({ id: 'admin-1', email: 'admin@example.com', isCloudAdmin: true })
+    await userRepository.create({ id: 'admin-1', email: 'admin@example.com', username: 'admin', isCloudAdmin: true })
     const accessRequest = AccessRequest.create({
       requesterId: 'user-1',
       requesterEmail: 'user1@example.com',
+      username: 'user1',
       project: 'analytics',
+      permissions: ['s3:GetObject'],
     })
     await accessRequestRepository.create(accessRequest)
     await sut.execute({
@@ -32,11 +34,13 @@ describe('ApproveAccessRequestUseCase', () => {
   })
 
   it('should throw if approver is not a cloud admin', async () => {
-    await userRepository.create({ id: 'user-2', email: 'user2@example.com', isCloudAdmin: false })
+    await userRepository.create({ id: 'user-2', email: 'user2@example.com', username: 'user2', isCloudAdmin: false })
     const accessRequest = AccessRequest.create({
       requesterId: 'user-1',
       requesterEmail: 'user1@example.com',
+      username: 'user1',
       project: 'analytics',
+      permissions: ['s3:GetObject'],
     })
     await accessRequestRepository.create(accessRequest)
     await expect(

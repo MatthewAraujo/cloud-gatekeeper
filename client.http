@@ -1,30 +1,28 @@
 @baseUrl = http://localhost:3333
 @request_id=""
-###
 
-# @name request_access
+# @name request_cloud_gatekeeper_access
 POST {{baseUrl}}/access-requests
 Content-Type: application/json
 
 {
-  "requesterId":"6140db45-6c1a-4e2b-a445-99b6e0963027",
-  "message": "Me responde apenas com 'ok' nada mais do que isso, apenas uma resposta curta"
+  "requesterId":"6b9e5ed5-c15c-4b57-931b-00c670364bfa",
+  "message": "I need read access to the cloud-gatekeeper S3 bucket for data analysis and reporting purposes"
 }
-
 ###
 
 # @name list_pending_requests
-GET {{baseUrl}}/access-requests/pending?viewerId=1323ce6a-44a0-422a-a4ee-ecb331c36eaf
+GET {{baseUrl}}/access-requests/pending?viewerId=a460a902-2c89-4222-b792-c9b2ddc8d0aa
 Content-Type: application/json
 
 ###
 
 # @name approve_access_request
-POST {{baseUrl}}/access-requests/9655aa1d-29af-4955-aa43-376b3ec055f1/approve
+POST {{baseUrl}}/access-requests/f0833fcc-3e21-4419-859d-024211430798/approve
 Content-Type: application/json
 
 {
-  "approverId": "1323ce6a-44a0-422a-a4ee-ecb331c36eaf",
+  "approverId": "a460a902-2c89-4222-b792-c9b2ddc8d0aa",
   "action": "APPROVE"
 }
 

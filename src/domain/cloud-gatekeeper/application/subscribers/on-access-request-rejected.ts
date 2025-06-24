@@ -16,26 +16,37 @@ export class OnAccessRequestRejected implements EventHandler {
   }
 
   private async handle(event: AccessRequestRejectedEvent) {
-    const { accessRequest, approverId, reason } = event
+    try {
+      const { accessRequest, approverId, reason } = event
 
-    console.log('❌ Access request rejected event received:', {
-      accessRequestId: accessRequest.id.toString(),
-      requesterEmail: accessRequest.requesterEmail,
-      project: accessRequest.project,
-      approverId,
-      reason,
-    })
+      console.log('❌ Access request rejected event received:', {
+        accessRequestId: accessRequest.id.toString(),
+        requesterEmail: accessRequest.requesterEmail,
+        project: accessRequest.project,
+        approverId,
+        reason,
+      })
 
-    // Send notification to requester about rejection
-    const message = this.buildRejectionNotification(accessRequest, approverId, reason)
+      // Send notification to requester about rejection
+      const message = this.buildRejectionNotification(accessRequest, approverId, reason)
 
-    // Send to the requester's Slack channel
-    await this.slackService.sendMessage({ channel: accessRequest.requesterId, message })
+      try {
+        // Send to the requester's Slack channel
+        await this.slackService.sendMessage({ channel: accessRequest.requesterId, message })
+        console.log(`✅ Rejection notification sent to user ${accessRequest.requesterId}`)
+      } catch (slackError) {
+        console.error(`❌ Failed to send rejection notification to user ${accessRequest.requesterId}:`, slackError)
+        // Don't throw to prevent event system crashes
+      }
 
-    // You could also trigger other side effects here:
-    // - Update audit logs
-    // - Send email notification
-    // - Trigger follow-up workflows
+      // You could also trigger other side effects here:
+      // - Update audit logs
+      // - Send email notification
+      // - Trigger follow-up workflows
+    } catch (error) {
+      console.error('❌ Critical error in OnAccessRequestRejected handler:', error)
+      // Don't throw to prevent event system crashes
+    }
   }
 
   private buildRejectionNotification(accessRequest: any, approverId: string, reason?: string): string {
@@ -52,8 +63,6 @@ Your access request for project *${accessRequest.project}* has been rejected.
     }
 
     message += '\n\nIf you believe this was an error or need to provide additional information, please contact the cloud admin team.'
-
-
 
     return message
   }

@@ -16,21 +16,30 @@ export class OnAccessRequestCreated implements EventHandler {
   }
 
   private async handle(event: AccessRequestCreatedEvent) {
-    const { accessRequest } = event
+    try {
+      const { accessRequest } = event
 
-    console.log('📧 Access request created event received:', {
-      accessRequestId: accessRequest.id.toString(),
-      requesterEmail: accessRequest.requesterEmail,
-      project: accessRequest.project,
-    })
+      console.log('📧 Access request created event received:', {
+        accessRequestId: accessRequest.id.toString(),
+        requesterEmail: accessRequest.requesterEmail,
+        project: accessRequest.project,
+      })
 
-    // Send notification to cloud admins about new access request
-    const message = this.buildAccessRequestNotification(accessRequest)
+      // Send notification to cloud admins about new access request
+      const message = this.buildAccessRequestNotification(accessRequest)
+      const adminChannel = 'C0700000000' // Cloud admins channel
 
-    // You can customize the channel or get it from configuration
-    const adminChannel = 'C0700000000' // Cloud admins channel
-
-    await this.slackService.sendMessage({ channel: adminChannel, message })
+      try {
+        await this.slackService.sendMessage({ channel: adminChannel, message })
+        console.log('✅ Slack notification sent to admin channel for new access request')
+      } catch (slackError) {
+        console.error('❌ Failed to send Slack notification to admin channel:', slackError)
+        // Don't throw to prevent event system crashes
+      }
+    } catch (error) {
+      console.error('❌ Critical error in OnAccessRequestCreated handler:', error)
+      // Don't throw to prevent event system crashes
+    }
   }
 
   private buildAccessRequestNotification(accessRequest: any): string {

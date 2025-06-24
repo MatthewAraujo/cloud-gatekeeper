@@ -1,4 +1,4 @@
-import { AccessRequestUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/access-request'
+import { AccessRequestUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/access-request-use-case'
 import { Public } from '@/infra/auth/public'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { Body, Controller, Post } from '@nestjs/common'

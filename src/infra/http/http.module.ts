@@ -5,9 +5,9 @@ import { AccessRequestController } from './controllers/access-request.controller
 import { ApproveAccessRequestController } from './controllers/approve-access-request.controller'
 import { ListPendingAccessRequestsController } from './controllers/list-pending-access-requests.controller'
 import { ServicesModule } from '@/infra/services/services.module'
-import { AccessRequestUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/access-request'
 import { ApproveAccessRequestUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/approve-access-request'
 import { ListPendingAccessRequestsUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/list-pending-access-requests'
+import { AccessRequestUseCase } from '@/domain/cloud-gatekeeper/application/use-cases/access-request-use-case'
 
 @Module({
 	imports: [DatabaseModule, ServicesModule],

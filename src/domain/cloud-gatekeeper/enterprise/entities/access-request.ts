@@ -7,7 +7,9 @@ import { AccessRequestRejectedEvent } from '../events/access-request-rejected-ev
 export interface AccessRequestProps {
   requesterId: string
   requesterEmail: string
+  username: string
   project: string
+  permissions: string[]
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   approvedById?: string
   reason?: string
@@ -24,8 +26,16 @@ export class AccessRequest extends AggregateRoot<AccessRequestProps> {
     return this.props.requesterEmail
   }
 
+  get username(): string {
+    return this.props.username
+  }
+
   get project(): string {
     return this.props.project
+  }
+
+  get permissions(): string[] {
+    return this.props.permissions
   }
 
   get status(): 'PENDING' | 'APPROVED' | 'REJECTED' {
