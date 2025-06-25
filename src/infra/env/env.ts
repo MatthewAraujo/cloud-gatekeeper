@@ -16,6 +16,8 @@ export const envSchema = z.object({
 	OPENAI_API_KEY: z.string(),
 	SLACK_BOT_TOKEN: z.string(),
 	SLACK_DEFAULT_CHANNEL: z.string().optional().default('#new-channel'),
+	SLACK_SIGNING_SECRET: z.string(),
+	SLACK_APP_TOKEN: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>

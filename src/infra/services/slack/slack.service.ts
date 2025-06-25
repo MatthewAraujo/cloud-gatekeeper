@@ -37,12 +37,105 @@ export interface SendAccessRequestNotificationParams {
   channel?: string
 }
 
+export interface BotMentionEvent {
+  type: string
+  user: string
+  text: string
+  channel: string
+  ts: string
+  team: string
+}
+
+export interface BotMentionData {
+  slackId: string
+  message: string
+  channel: string
+  timestamp: string
+}
+
 @Injectable()
 export class SlackService {
   private slackClient: WebClient
 
   constructor(private readonly envService: EnvService) {
     this.slackClient = new WebClient(this.envService.get('SLACK_BOT_TOKEN'))
+  }
+
+  /**
+   * Extract bot mention data from a Slack event
+   * @param event The Slack event containing the bot mention
+   * @returns BotMentionData with extracted information
+   */
+  async extractBotMentionData(event: BotMentionEvent): Promise<BotMentionData | null> {
+    try {
+      // Get the bot user ID to identify mentions
+      const botUserId = await this.getBotUserId()
+      if (!botUserId) {
+        console.error('❌ Bot user ID not found')
+        return null
+      }
+
+      // Check if the message mentions the bot
+      const botMentionPattern = new RegExp(`<@${botUserId}>`, 'g')
+      if (!botMentionPattern.test(event.text)) {
+        return null
+      }
+
+      // Extract the message content (remove the bot mention)
+      const message = event.text.replace(botMentionPattern, '').trim()
+
+      if (!message) {
+        console.log('📝 Bot mentioned but no message content found')
+        return null
+      }
+
+      return {
+        slackId: event.user,
+        message,
+        channel: event.channel,
+        timestamp: event.ts
+      }
+    } catch (error) {
+      console.error('❌ Error extracting bot mention data:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get the bot's user ID from Slack
+   * @returns The bot's user ID or null if not found
+   */
+  async getBotUserId(): Promise<string | null> {
+    try {
+      const result = await this.slackClient.auth.test()
+      return result.user_id || null
+    } catch (error) {
+      console.error('❌ Error getting bot user ID:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get user information by Slack ID
+   * @param slackId The Slack user ID
+   * @returns User information or null if not found
+   */
+  async getUserInfo(slackId: string): Promise<any | null> {
+    try {
+      const result = await this.slackClient.users.info({
+        user: slackId
+      })
+
+      if (!result.ok || !result.user) {
+        console.error(`❌ Failed to get user info for ${slackId}:`, result.error)
+        return null
+      }
+
+      return result.user
+    } catch (error) {
+      console.error(`❌ Error getting user info for ${slackId}:`, error)
+      return null
+    }
   }
 
   async sendMessage({ channel, message, threadTs, blocks }: SendMessageParams): Promise<void> {
