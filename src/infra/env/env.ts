@@ -15,7 +15,7 @@ export const envSchema = z.object({
 	PORT: z.coerce.number().optional().default(3333),
 	OPENAI_API_KEY: z.string(),
 	SLACK_BOT_TOKEN: z.string(),
-	SLACK_DEFAULT_CHANNEL: z.string().optional().default('#new-channel'),
+	SLACK_DEFAULT_CHANNEL: z.string().optional().default('#all-cloud-gatekeeper'),
 	SLACK_SIGNING_SECRET: z.string(),
 	SLACK_APP_TOKEN: z.string(),
 })

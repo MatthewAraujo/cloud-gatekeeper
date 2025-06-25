@@ -25,15 +25,7 @@ export class OnAccessRequestApproved implements EventHandler {
     try {
       const { accessRequest, approverId } = event
 
-      console.log('✅ Access request approved event received:', {
-        accessRequestId: accessRequest.id.toString(),
-        requesterEmail: accessRequest.requesterEmail,
-        project: accessRequest.project,
-        permissions: accessRequest.permissions,
-        approverId,
-      })
-
-      const user = await this.userRepository.findById(accessRequest.requesterId)
+      const user = await this.userRepository.findById(approverId)
       if (!user) {
         return
       }
