@@ -6,7 +6,7 @@ POST {{baseUrl}}/access-requests
 Content-Type: application/json
 
 {
-  "requesterId":"6b9e5ed5-c15c-4b57-931b-00c670364bfa",
+  "requesterId":"6689e872-19f4-4669-89b3-15813a470f6f",
   "message": "I need read access to the cloud-gatekeeper S3 bucket for data analysis and reporting purposes"
 }
 ###

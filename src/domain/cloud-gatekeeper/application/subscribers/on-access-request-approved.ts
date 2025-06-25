@@ -4,11 +4,13 @@ import { EventHandler } from '@/core/events/event-handler'
 import { AccessRequestApprovedEvent } from '../../enterprise/events/access-request-approved-event'
 import { SlackService } from '@/infra/services/slack/slack.service'
 import { AwsService } from '@/infra/services/aws/aws.service'
+import { UserRepository } from '../repositories/user-repository'
 
 @Injectable()
 export class OnAccessRequestApproved implements EventHandler {
   constructor(
     private readonly slackService: SlackService,
+    private readonly userRepository: UserRepository,
     private readonly awsService: AwsService,
   ) { }
 
@@ -31,14 +33,16 @@ export class OnAccessRequestApproved implements EventHandler {
         approverId,
       })
 
-      const message = this.buildApprovalNotification(accessRequest, approverId)
+      const user = await this.userRepository.findById(accessRequest.requesterId)
+      if (!user) {
+        return
+      }
 
       try {
-        await this.slackService.sendMessage({ channel: accessRequest.requesterId, message })
+        await this.slackService.sendAccessRequestApprovedNotification(accessRequest, { id: approverId, email: user.username })
         console.log(`✅ Slack notification sent to user ${accessRequest.requesterId}`)
       } catch (slackError) {
         console.error(`❌ Failed to send Slack notification to user ${accessRequest.requesterId}:`, slackError)
-        // Continue with AWS operations even if Slack fails
       }
 
       try {
@@ -50,25 +54,21 @@ export class OnAccessRequestApproved implements EventHandler {
         console.log(`✅ AWS access granted for user ${accessRequest.username} to project ${accessRequest.project} with permissions: ${accessRequest.permissions.join(', ')}`)
       } catch (awsError) {
         console.error(`❌ Failed to grant AWS access for user ${accessRequest.username}:`, awsError)
-        // Note: We don't throw here to avoid breaking the event flow
-        // The access request is still approved even if AWS operations fail
+
+        if (awsError instanceof Error && awsError.message?.includes('does not exist')) {
+          try {
+            const existingUsers = await this.awsService.listUsers()
+            console.error(`💡 Available IAM users: ${existingUsers.join(', ')}`)
+            console.error(`💡 Requested user '${accessRequest.username}' is not in the list above.`)
+          } catch (listError) {
+            console.error('💡 Could not list existing IAM users for debugging:', listError)
+          }
+        }
+
+        console.error(`⚠️ Access request approved in database but AWS access was NOT granted. User ${accessRequest.username} may not exist in AWS IAM.`)
       }
     } catch (error) {
       console.error('❌ Critical error in OnAccessRequestApproved handler:', error)
-      // Don't throw to prevent event system crashes
     }
-  }
-
-  private buildApprovalNotification(accessRequest: any, approverId: string): string {
-    return `🎉 *Access Request Approved*
-		
-Your access request for project *${accessRequest.project}* has been approved!
-
-*Project:* ${accessRequest.project}
-*Permissions:* ${accessRequest.permissions.join(', ')}
-*Approved by:* ${approverId}
-*Approved at:* ${accessRequest.updatedAt.toISOString()}
-
-Your AWS access has been granted with the requested permissions. You should be able to access the resources now. If you have any questions, please contact the cloud admin team.`
   }
 } 

@@ -37,6 +37,7 @@ model User {
   email        String
   username     String // AWS username for the user
   isCloudAdmin Boolean @default(false)
+  slackId      String  @unique // <-- Add this line
 
   // Relation
   approvedRequests AccessRequest[] @relation("Approver")

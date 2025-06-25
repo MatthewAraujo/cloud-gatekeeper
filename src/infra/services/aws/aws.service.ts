@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { IAMClient, PutUserPolicyCommand, ListUsersCommand, GetUserCommand } from '@aws-sdk/client-iam'
+import { IAMClient, PutUserPolicyCommand, ListUsersCommand, GetUserCommand, CreateUserCommand, NoSuchEntityException } from '@aws-sdk/client-iam'
 import { ResourceGroupsTaggingAPIClient, GetResourcesCommand } from '@aws-sdk/client-resource-groups-tagging-api'
 
 interface ProjectAccessRequest {
@@ -58,13 +58,19 @@ export class AwsService {
       console.log(`Successfully granted access for user ${username} to ${resource}`)
     } catch (error) {
       console.error(`Failed to grant access for user ${username}:`, error)
-      // Log the error but don't throw to prevent API crashes
-      // The access request approval process should continue even if AWS operations fail
+      // Re-throw the error to let the caller handle it appropriately
+      throw error
     }
   }
 
   async grantProjectAccess(request: ProjectAccessRequest): Promise<void> {
     const { username, project, permissions, resource } = request
+
+    // Check if the IAM user exists before attempting to grant access
+    const userExists = await this.checkUserExists(username)
+    if (!userExists) {
+      throw new Error(`IAM user '${username}' does not exist in AWS. Please create the user in AWS IAM before approving access requests.`)
+    }
 
     // Use provided resource or discover from project
     const targetResource = resource || await this.discoverResourceByProject(project)
@@ -209,9 +215,65 @@ export class AwsService {
 
       console.log(`Applied policy ${policyName} to user ${username}`)
     } catch (error) {
+      if (error instanceof NoSuchEntityException) {
+        console.error(`❌ IAM user '${username}' does not exist in AWS. Cannot apply policy.`)
+        console.error('💡 To fix this issue:')
+        console.error('   1. Create the IAM user in AWS IAM')
+        console.error('   2. Or ensure the username in the access request matches an existing IAM user')
+        console.error('   3. Or implement automatic IAM user creation (requires additional AWS permissions)')
+        throw new Error(`IAM user '${username}' does not exist. Please create the user in AWS IAM first.`)
+      }
+
       console.error(`Failed to apply policy to user ${username}:`, error)
-      // Log the error but don't throw to prevent API crashes
       throw error // Re-throw for the calling method to handle
+    }
+  }
+
+  // Optional: Method to create IAM user if it doesn't exist
+  // This requires additional AWS permissions (iam:CreateUser)
+  private async ensureUserExists(username: string): Promise<void> {
+    try {
+      // Try to get the user to see if it exists
+      await this.iamClient.send(new GetUserCommand({ UserName: username }))
+      console.log(`✅ IAM user '${username}' already exists`)
+    } catch (error) {
+      if (error instanceof NoSuchEntityException) {
+        console.log(`🔄 Creating IAM user '${username}'...`)
+        try {
+          await this.iamClient.send(new CreateUserCommand({ UserName: username }))
+          console.log(`✅ Successfully created IAM user '${username}'`)
+        } catch (createError) {
+          console.error(`❌ Failed to create IAM user '${username}':`, createError)
+          throw new Error(`Cannot create IAM user '${username}'. Insufficient permissions or user already exists.`)
+        }
+      } else {
+        throw error
+      }
+    }
+  }
+
+  // Check if an IAM user exists
+  private async checkUserExists(username: string): Promise<boolean> {
+    try {
+      await this.iamClient.send(new GetUserCommand({ UserName: username }))
+      return true
+    } catch (error) {
+      if (error instanceof NoSuchEntityException) {
+        return false
+      }
+      // For other errors, re-throw to avoid masking real issues
+      throw error
+    }
+  }
+
+  // List existing IAM users (for debugging)
+  async listUsers(): Promise<string[]> {
+    try {
+      const response = await this.iamClient.send(new ListUsersCommand({}))
+      return response.Users?.map(user => user.UserName).filter(Boolean) as string[] || []
+    } catch (error) {
+      console.error('Failed to list IAM users:', error)
+      throw error
     }
   }
 } 

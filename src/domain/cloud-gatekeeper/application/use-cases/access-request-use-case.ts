@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { OpenAiService } from '@/infra/services/openai/openai.service'
-import { SlackService } from '@/infra/services/slack/slack.service'
 import { AccessRequestRepository } from '../repositories/access-repository'
 import { UserRepository } from '../repositories/user-repository'
 import { AccessRequest } from '@/domain/cloud-gatekeeper/enterprise/entities/access-request'
@@ -10,8 +9,6 @@ interface AccessRequestUseCaseRequest {
 	requesterId: string
 }
 
-const slackChannel = 'C0700000000'
-
 @Injectable()
 export class AccessRequestUseCase {
 	private readonly logger = new Logger(AccessRequestUseCase.name)
@@ -20,7 +17,6 @@ export class AccessRequestUseCase {
 		private readonly accessRequestRepository: AccessRequestRepository,
 		private readonly userRepository: UserRepository,
 		private readonly openaiService: OpenAiService,
-		private readonly slackService: SlackService
 	) { }
 	async execute(request: AccessRequestUseCaseRequest): Promise<void> {
 		const { message, requesterId } = request
@@ -56,7 +52,7 @@ export class AccessRequestUseCase {
 		const openAiResponse = `
 		 	{
 		 		"project": "cloud-gatekeeper",
-		 		"permissions": ["s3:GetBucketLocation"]
+		 		"permissions": ["s3:GetObject"]
 	 	}`
 
 		this.logger.debug('OpenAi Responde', openAiResponse)
@@ -76,8 +72,6 @@ export class AccessRequestUseCase {
 			project = projectMatch ? projectMatch[1] : project
 			permissions = ['s3:GetObject', 's3:ListBucket'] // Default read-only access
 		}
-
-		await this.slackService.sendMessage({ channel: slackChannel, message: openAiResponse })
 
 		const finalUsername = user.username
 		this.logger.debug(`Using username for access request: ${finalUsername}`)

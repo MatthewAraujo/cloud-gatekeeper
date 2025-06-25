@@ -27,12 +27,8 @@ export class OnAccessRequestRejected implements EventHandler {
         reason,
       })
 
-      // Send notification to requester about rejection
-      const message = this.buildRejectionNotification(accessRequest, approverId, reason)
-
       try {
-        // Send to the requester's Slack channel
-        await this.slackService.sendMessage({ channel: accessRequest.requesterId, message })
+        await this.slackService.sendAccessRequestRejectedNotification(accessRequest, { id: approverId, email: approverId }, reason || 'No reason provided')
         console.log(`✅ Rejection notification sent to user ${accessRequest.requesterId}`)
       } catch (slackError) {
         console.error(`❌ Failed to send rejection notification to user ${accessRequest.requesterId}:`, slackError)
@@ -47,23 +43,5 @@ export class OnAccessRequestRejected implements EventHandler {
       console.error('❌ Critical error in OnAccessRequestRejected handler:', error)
       // Don't throw to prevent event system crashes
     }
-  }
-
-  private buildRejectionNotification(accessRequest: any, approverId: string, reason?: string): string {
-    let message = `❌ *Access Request Rejected*
-		
-Your access request for project *${accessRequest.project}* has been rejected.
-
-*Project:* ${accessRequest.project}
-*Rejected by:* ${approverId}
-*Rejected at:* ${accessRequest.updatedAt.toISOString()}`
-
-    if (reason) {
-      message += `\n*Reason:* ${reason}`
-    }
-
-    message += '\n\nIf you believe this was an error or need to provide additional information, please contact the cloud admin team.'
-
-    return message
   }
 } 

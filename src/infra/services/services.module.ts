@@ -5,10 +5,11 @@ import { PrismaLogRepository } from '../database/prisma/repository/prisma-log.re
 import { LogService } from './log/log.service'
 import { DatabaseModule } from '../database/database.module'
 import { AwsModule } from './aws/aws.module'
+import { EnvModule } from '../env/env.module'
 
 @Module({
-  imports: [DatabaseModule, AwsModule],
+  imports: [DatabaseModule, AwsModule, EnvModule],
   providers: [OpenAiService, SlackService, PrismaLogRepository, LogService],
-  exports: [OpenAiService, SlackService, PrismaLogRepository, LogService, AwsModule],
+  exports: [OpenAiService, SlackService, PrismaLogRepository, LogService, AwsModule, DatabaseModule],
 })
 export class ServicesModule { }

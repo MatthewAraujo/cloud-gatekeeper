@@ -3,9 +3,10 @@ import { OnAccessRequestCreated } from '@/domain/cloud-gatekeeper/application/su
 import { OnAccessRequestApproved } from '@/domain/cloud-gatekeeper/application/subscribers/on-access-request-approved'
 import { OnAccessRequestRejected } from '@/domain/cloud-gatekeeper/application/subscribers/on-access-request-rejected'
 import { ServicesModule } from '../services/services.module'
+import { EnvModule } from '../env/env.module'
 
 @Module({
-  imports: [ServicesModule],
+  imports: [ServicesModule, EnvModule],
   providers: [
     OnAccessRequestCreated,
     OnAccessRequestApproved,

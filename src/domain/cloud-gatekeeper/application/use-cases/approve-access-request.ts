@@ -20,13 +20,17 @@ export class ApproveAccessRequestUseCase {
   ) { }
 
   async execute(request: ApproveAccessRequestUseCaseRequest): Promise<void> {
-    const { accessRequestId, approverId, action, reason } = request
+    const { accessRequestId, action, reason } = request
 
-    const approver = await this.userRepository.findById(approverId)
+    let approverId = request.approverId
+
+    const approver = await this.userRepository.findBySlackId(approverId)
     if (!approver) {
       this.logger.warn(`Approver not found: ${approverId}`)
       throw new BadRequestException('Approver not found')
     }
+
+    approverId = approver.id
 
     if (!approver.isCloudAdmin) {
       this.logger.warn(`Approver is not a cloud admin: ${approverId}`)

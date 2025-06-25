@@ -9,6 +9,12 @@ export class PrismaUserRepository extends UserRepository {
     super()
   }
 
+  async findBySlackId(slackId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { slackId },
+    })
+  }
+
   async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
