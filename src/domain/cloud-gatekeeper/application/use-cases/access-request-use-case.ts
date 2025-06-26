@@ -30,30 +30,24 @@ export class AccessRequestUseCase {
 
 		this.logger.debug(`User found: ${user.id}, email: ${user.email}, username: ${user.username}`)
 
-		// const openAiResponse = await this.openaiService.createCompletion(
-		// 	`Analyze this access request message and extract the project name and required AWS permissions. 
-		// 	Return a JSON object with "project" and "permissions" fields.
-		// 	Message: "${message}"
+		const openAiResponse = await this.openaiService.createCompletion(
+			`Analyze this access request message and extract the project name and required AWS permissions. 
+			Return a JSON object with "project" and "permissions" fields.
+			Message: "${message}"
 
-		// 	Return only the json
+			Return only the json
 
-		// 	Example response format:
-		// 	{
-		// 		"project": "analytics-prod",
-		// 		"permissions": ["s3:GetObject", "s3:ListBucket"]
-		// 	}`
-		// )
+			Example response format:
+			{
+				"project": "analytics-prod",
+				"permissions": ["s3:GetObject", "s3:ListBucket"]
+			}`
+		)
 
-		// if (!openAiResponse) {
-		// 	this.logger.warn('No response from openai')
-		// 	throw new Error('No response from openai')
-		// }
-
-		const openAiResponse = `
-		 	{
-		 		"project": "cloud-gatekeeper",
-		 		"permissions": ["s3:GetObject"]
-	 	}`
+		if (!openAiResponse) {
+			this.logger.warn('No response from openai')
+			throw new Error('No response from openai')
+		}
 
 		this.logger.debug('OpenAi Responde', openAiResponse)
 
